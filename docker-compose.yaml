@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
       args:
         UBUNTU_VERSION: 24.04
-        AWSCLI_VERSION: 2.25.1
+        AWSCLI_VERSION: 2.27.29
     container_name: aws
     environment:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
