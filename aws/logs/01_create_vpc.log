@@ -1,0 +1,106 @@
+++ aws ec2 create-vpc --cidr-block 10.200.123.0/26 --instance-tenancy default --tag-specifications '{"ResourceType":"vpc","Tags":[{"Key":"Name","Value":"networking-bootcamp-vpc"}]}'
+++ jq -r .Vpc.VpcId
++ vpc_id=vpc-0433cfb5052c04ab1
++ aws ec2 modify-vpc-attribute --vpc-id vpc-0433cfb5052c04ab1 --enable-dns-hostnames '{"Value":true}'
++ aws ec2 describe-vpcs --vpc-ids vpc-0433cfb5052c04ab1
+{
+    "Vpcs": [
+        {
+            "OwnerId": "194503673876",
+            "InstanceTenancy": "default",
+            "CidrBlockAssociationSet": [
+                {
+                    "AssociationId": "vpc-cidr-assoc-056a32a874c21e963",
+                    "CidrBlock": "10.200.123.0/26",
+                    "CidrBlockState": {
+                        "State": "associated"
+                    }
+                }
+            ],
+            "IsDefault": false,
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "networking-bootcamp-vpc"
+                }
+            ],
+            "BlockPublicAccessStates": {
+                "InternetGatewayBlockMode": "off"
+            },
+            "VpcId": "vpc-0433cfb5052c04ab1",
+            "State": "available",
+            "CidrBlock": "10.200.123.0/26",
+            "DhcpOptionsId": "dopt-1fb72175"
+        }
+    ]
+}
+++ aws ec2 create-subnet --vpc-id vpc-0433cfb5052c04ab1 --cidr-block 10.200.123.0/28 --availability-zone eu-central-1a --tag-specifications '{"ResourceType":"subnet","Tags":[{"Key":"Name","Value":"networking-bootcamp-subnet-public1-eu-central-1a"}]}'
+++ jq -r .Subnet.SubnetId
++ pub_subn_id=subnet-0af5452a4e91a4700
+++ aws ec2 create-subnet --vpc-id vpc-0433cfb5052c04ab1 --cidr-block 10.200.123.32/28 --availability-zone eu-central-1a --tag-specifications '{"ResourceType":"subnet","Tags":[{"Key":"Name","Value":"networking-bootcamp-subnet-private1-eu-central-1a"}]}'
+++ jq -r .Subnet.SubnetId
++ priv_subn_id=subnet-062de57203fe74a6f
+++ aws ec2 create-internet-gateway --tag-specifications '{"ResourceType":"internet-gateway","Tags":[{"Key":"Name","Value":"networking-bootcamp-igw"}]}'
+++ jq -r .InternetGateway.InternetGatewayId
++ igw_id=igw-0959986190456de3e
++ aws ec2 attach-internet-gateway --internet-gateway-id igw-0959986190456de3e --vpc-id vpc-0433cfb5052c04ab1
+++ aws ec2 create-route-table --vpc-id vpc-0433cfb5052c04ab1 --tag-specifications '{"ResourceType":"route-table","Tags":[{"Key":"Name","Value":"networking-bootcamp-rtb-public"}]}'
+++ jq -r .RouteTable.RouteTableId
++ rtb_pub_id=rtb-0130869973573d3f2
++ aws ec2 create-route --route-table-id rtb-0130869973573d3f2 --destination-cidr-block 0.0.0.0/0 --gateway-id igw-0959986190456de3e
+{
+    "Return": true
+}
++ aws ec2 associate-route-table --route-table-id rtb-0130869973573d3f2 --subnet-id subnet-0af5452a4e91a4700
+{
+    "AssociationId": "rtbassoc-08779f0f704b2de7e",
+    "AssociationState": {
+        "State": "associated"
+    }
+}
+++ aws ec2 create-route-table --vpc-id vpc-0433cfb5052c04ab1 --tag-specifications '{"ResourceType":"route-table","Tags":[{"Key":"Name","Value":"networking-bootcamp-rtb-private1-eu-central-1a"}]}'
+++ jq -r .RouteTable.RouteTableId
++ rtb_priv_id=rtb-0df29111cb12c9cd0
++ aws ec2 associate-route-table --route-table-id rtb-0df29111cb12c9cd0 --subnet-id subnet-062de57203fe74a6f
+{
+    "AssociationId": "rtbassoc-0b09e7e1a7d9fe3b0",
+    "AssociationState": {
+        "State": "associated"
+    }
+}
++ aws ec2 describe-route-tables --route-table-ids rtb-0df29111cb12c9cd0
+{
+    "RouteTables": [
+        {
+            "Associations": [
+                {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-0b09e7e1a7d9fe3b0",
+                    "RouteTableId": "rtb-0df29111cb12c9cd0",
+                    "SubnetId": "subnet-062de57203fe74a6f",
+                    "AssociationState": {
+                        "State": "associated"
+                    }
+                }
+            ],
+            "PropagatingVgws": [],
+            "RouteTableId": "rtb-0df29111cb12c9cd0",
+            "Routes": [
+                {
+                    "DestinationCidrBlock": "10.200.123.0/26",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                }
+            ],
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "networking-bootcamp-rtb-private1-eu-central-1a"
+                }
+            ],
+            "VpcId": "vpc-0433cfb5052c04ab1",
+            "OwnerId": "194503673876"
+        }
+    ]
+}
